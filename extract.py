@@ -86,7 +86,7 @@ for root, directories, filenames in os.walk(ScanDir):
         file_path = os.path.join(root, filename)
         file = open(file_path,"r")
         # res file
-        doc_name = "res/"+str(k)+".csv"
+        doc_name = "../res/"+str(k)+".csv"
         content = open(doc_name, "w")
         # remove email headers
         payload = extract_headers(''.join(file.readlines()))
