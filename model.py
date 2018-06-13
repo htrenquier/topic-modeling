@@ -28,7 +28,7 @@ for root, directories, filenames in os.walk(ScanDir):
     for filename in filenames:
         file_path = os.path.join(root, filename)
         k += 1
-        if k % 1000 == 0:
+        if k % 100 == 0:
             print(k)
         # word list from csv
         if os.stat(file_path).st_size <= 2:
@@ -40,7 +40,7 @@ for root, directories, filenames in os.walk(ScanDir):
             texts.append(filtered_text)  # stemmed_text)
 
 print("Saving texts in file")
-doc_name = "../res/not_stemmed_texts.csv"
+doc_name = "../res_texts/not_stemmed_texts.csv"
 texts_file = open(doc_name, "w")
 writer = csv.writer(texts_file)
 
