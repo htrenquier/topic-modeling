@@ -70,7 +70,12 @@ print("500")
 cm500 = models.CoherenceModel(model=ldamodel500, corpus=corpus, dictionary=dictionary, coherence='u_mass')  # tm is the trained topic model
 print("cm.get_coherence()")
 print(int(time.time() - time_start))
-print(cm.get_coherence())
+print("50:")
+print(cm50.get_coherence())
+print("200:")
+print(cm200.get_coherence())
+print("500:")
+print(cm500.get_coherence())
 print(int(time.time() - time_start))
 
 #ldamodel.save("../saved_topics/ldamodel10topics")
