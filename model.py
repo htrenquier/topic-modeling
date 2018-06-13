@@ -4,36 +4,55 @@ from gensim import corpora
 from gensim import models
 import numpy as np
 import time
+import csv
 
 # Create p_stemmer of class PorterStemmer
 p_stemmer = PorterStemmer()
 # numpy warning
-print(np.geterr())
-np.seterr(all='ignore')
-#np.warnings.filterwarnings('ignore')
 
+#np.seterr(all='ignore')
+#np.warnings.filterwarnings('ignore')
 print(np.geterr())
+
 # directory to scan
 ScanDir = '/Users/htrenqui/Documents/Travail/UvA/rp2/proj/res10k'
 
 texts = []
 num_empty_files = 0
 
+k = 0
 print("upload & stemming")
 time_start = time.time()
 print(int(time.time() - time_start))
 for root, directories, filenames in os.walk(ScanDir):
     for filename in filenames:
         file_path = os.path.join(root, filename)
+        k += 1
+        if k % 1000 == 0:
+            print(k)
         # word list from csv
         if os.stat(file_path).st_size <= 2:
             # empty file
             num_empty_files += 1
         else:
             filtered_text = np.genfromtxt(file_path, delimiter=',', dtype=str).tolist()
-            stemmed_text = [p_stemmer.stem(i) for i in filtered_text]
-            texts.append(stemmed_text)
+            # stemmed_text = [p_stemmer.stem(i) for i in filtered_text]
+            texts.append(filtered_text)  # stemmed_text)
 
+print("Saving texts in file")
+doc_name = "../res/not_stemmed_texts.csv"
+texts_file = open(doc_name, "w")
+writer = csv.writer(texts_file)
+
+for text in texts:
+    writer.writerow(text)
+    k -= 1
+    if k % 1000 == 0:
+        print(k)
+
+texts_file.close()
+
+print("~~~ texts file saved !")
 print(str(num_empty_files) + " empty files")
 print("len texts = " + str(len(texts)))
 print(int(time.time() - time_start))
@@ -46,13 +65,13 @@ print(int(time.time() - time_start))
 print("model")
 print("50")
 ldamodel50 = models.ldamodel.LdaModel(corpus, num_topics=50, id2word=dictionary)
-print("200")
-ldamodel200 = models.ldamodel.LdaModel(corpus, num_topics=200, id2word=dictionary)
-print("500")
-ldamodel500 = models.ldamodel.LdaModel(corpus, num_topics=500, id2word=dictionary)
+print("30")
+ldamodel30 = models.ldamodel.LdaModel(corpus, num_topics=30, id2word=dictionary)
+print("10")
+ldamodel10 = models.ldamodel.LdaModel(corpus, num_topics=10, id2word=dictionary)
 print(int(time.time() - time_start))
 print("top_topics:")
-print(ldamodel.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, window_size=None, coherence='u_mass',
+print(ldamodel50.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, window_size=None, coherence='u_mass',
                           topn=5, processes=-1))
 
 
