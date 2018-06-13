@@ -44,7 +44,12 @@ print("corpus")
 corpus = [dictionary.doc2bow(text) for text in texts]
 print(int(time.time() - time_start))
 print("model")
-ldamodel = models.ldamodel.LdaModel(corpus, num_topics=50, id2word=dictionary)
+print("50")
+ldamodel50 = models.ldamodel.LdaModel(corpus, num_topics=50, id2word=dictionary)
+print("200")
+ldamodel200 = models.ldamodel.LdaModel(corpus, num_topics=200, id2word=dictionary)
+print("500")
+ldamodel500 = models.ldamodel.LdaModel(corpus, num_topics=500, id2word=dictionary)
 print(int(time.time() - time_start))
 print("top_topics:")
 print(ldamodel.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, window_size=None, coherence='u_mass',
@@ -52,10 +57,19 @@ print(ldamodel.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, win
 
 
 print(int(time.time() - time_start))
+print("loading ggl model")
+#modelName = '../GoogleNews-vectors-negative300.bin'
+#w2v_model = models.KeyedVectors.load_word2vec_format(modelName, binary=True)
 print("coherence based on ggl model:")
-modelName = '../GoogleNews-vectors-negative300.bin'
-w2v_model = models.KeyedVectors.load_word2vec_format(modelName, binary=True)
-cm = models.CoherenceModel(model=w2v_model, corpus=corpus, coherence='u_mass')  # tm is the trained topic model
+print(int(time.time() - time_start))
+print("50")
+cm50 = models.CoherenceModel(model=ldamodel50, corpus=corpus, dictionary=dictionary, coherence='u_mass')  # tm is the trained topic model
+print("200")
+cm200 = models.CoherenceModel(model=ldamodel200, corpus=corpus, dictionary=dictionary, coherence='u_mass')  # tm is the trained topic model
+print("500")
+cm500 = models.CoherenceModel(model=ldamodel500, corpus=corpus, dictionary=dictionary, coherence='u_mass')  # tm is the trained topic model
+print("cm.get_coherence()")
+print(int(time.time() - time_start))
 print(cm.get_coherence())
 print(int(time.time() - time_start))
 
