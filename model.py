@@ -117,12 +117,12 @@ for k in rg:
     print("k = "+str(k))
     model_name = "../res_models/lda_model_k"+str(k)
     if os.path.isfile(model_name):
-        models.LdaModel.load(model_name, mmap='r')
-        print(model_name + "loaded.")
+        lda_models.append(models.LdaModel.load(model_name, mmap='r'))
+        print(model_name + " loaded.")
     else:
         lda_models.append(models.ldamodel.LdaModel(corpus, num_topics=k, id2word=dictionary, iterations=10))
         lda_models[-1].save(model_name)
-        print(model_name + "generated.")
+        print(model_name + " generated.")
     print("time: " + str(int(time.time() - time_start)))
     print("~")
 
