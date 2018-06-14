@@ -111,27 +111,46 @@ print("time: " + str(int(time.time() - time_start)))
 print("~")
 
 lda_models = []
-rg = range(10, 101, 10)
+rg = range(10, 61, 10)
 print("Generating models (k: # of topics):")  # k = number of topics
 for k in rg:
     print("k = "+str(k))
-    lda_models.append(models.ldamodel.LdaModel(corpus, num_topics=k, id2word=dictionary, iterations=10))
-    lda_models[-1].save("../res_models/lda_model_k"+str(k))
+    model_name = "../res_models/lda_model_k"+str(k)
+    if os.path.isfile(model_name):
+        models.LdaModel.load(model_name, mmap='r')
+        print(model_name + "loaded.")
+    else:
+        lda_models.append(models.ldamodel.LdaModel(corpus, num_topics=k, id2word=dictionary, iterations=10))
+        lda_models[-1].save(model_name)
+        print(model_name + "generated.")
     print("time: " + str(int(time.time() - time_start)))
     print("~")
 
 print("Coherence")
 for m in lda_models:
-    print("U_MASS: (k = " + str(rg[lda_models.index(m)])+")")
-    print(m.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, window_size=None, coherence='u_mass',
-                          topn=5, processes=4))
+    #print("U_MASS: (k = " + str(rg[lda_models.index(m)])+")")
+    #print(m.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, window_size=None, coherence='u_mass',
+    #                      topn=5, processes=4))
+    #print("time: " + str(int(time.time() - time_start)))
+    #print("~")
+    #print("C_V: (k = " + str(rg[lda_models.index(m)]) + ")")
+    #print(m.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, window_size=None, coherence='c_v',
+    #                   topn=5, processes=4))
+    #print("time: " + str(int(time.time() - time_start)))
+    #print("~")
+    print("Coherence with get_coherence()")
+    print("U_MASS: (k = " + str(rg[lda_models.index(m)]) + ")")
+    cm = models.CoherenceModel(model=m, corpus=corpus, coherence='u_mass')
+    print(cm.get_coherence())
     print("time: " + str(int(time.time() - time_start)))
     print("~")
     print("C_V: (k = " + str(rg[lda_models.index(m)]) + ")")
-    print(m.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, window_size=None, coherence='c_v',
-                       topn=5, processes=4))
+    cm = models.CoherenceModel(model=m, corpus=corpus, coherence='c_v')
+    print(cm.get_coherence())
     print("time: " + str(int(time.time() - time_start)))
     print("~")
+
+
 
 #modelName = '../GoogleNews-vectors-negative300.bin'
 #w2v_model = models.KeyedVectors.load_word2vec_format(modelName, binary=True)
