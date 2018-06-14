@@ -86,10 +86,12 @@ print("~")
 if args["load_texts"] != 'no':
     texts_file_path = args["load_texts"]
     print("Starting uploading from texts file...")
-    texts = np.genfromtxt(texts_file_path, delimiter=',', dtype=str).tolist()
+    with open(texts_file_path,"r") as texts_file:
+        for l in texts_file.readline():
+            texts.append(l.split(","))
     print("texts uploaded! with " + str(len(texts)))
     print("proof:")
-    for ih in range(0,10):
+    for ih in range(0, 10):
         print(texts[ih])
 
 if len(texts) == 0:
