@@ -89,18 +89,18 @@ if args["load_texts"] != 'no':
     with open(texts_file_path,"r") as texts_file:
         for l in texts_file.readlines():
             texts.append(l.split(","))
-    print("texts uploaded! with " + str(len(texts)))
-    print("proof:")
-    for ih in range(0, 10):
-        print(texts[ih])
+    print("texts uploaded with " + str(len(texts)) + " lines.")
+    texts_file.close()
+
 
 if len(texts) == 0:
-    print("Error texts empty")
-    print("len texts = " + str(len(texts)))
+    exit(code="Error texts empty")
 
-
+print("len texts = " + str(len(texts)))
 print("time: " + str(int(time.time() - time_start)))
 print("~")
+
+
 print("Generating dictionary:")
 dictionary = corpora.Dictionary(texts)
 print("time: " + str(int(time.time() - time_start)))
@@ -112,7 +112,7 @@ print("~")
 
 lda_models = []
 rg = range(10, 101, 10)
-print("Generating models (k: # of topics):") #  k = number of topics
+print("Generating models (k: # of topics):")  # k = number of topics
 for k in rg:
     print("k = "+str(k))
     lda_models.append(models.ldamodel.LdaModel(corpus, num_topics=k, id2word=dictionary, iterations=10))
