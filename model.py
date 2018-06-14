@@ -26,7 +26,7 @@ args = vars(ap.parse_args())
 # numpy warning
 #np.seterr(all='ignore')
 #np.warnings.filterwarnings('ignore')
-print(np.geterr())
+#print(np.geterr())
 
 
 # directory to scan
@@ -81,13 +81,16 @@ if args["gen_texts"] == 'yes':
         texts_file.close()
         print("~~~ texts file saved !")
 
-print(int(time.time() - time_start))
+print("time: " + str(int(time.time() - time_start)))
+print("~")
 if args["load_texts"] != 'no':
     texts_file_path = args["load_texts"]
-    texts_file = open(doc_name, "r")
     print("Starting uploading from texts file...")
-    texts = np.genfromtxt(file_path, delimiter=',', dtype=str).tolist()
+    texts = np.genfromtxt(texts_file_path, delimiter=',', dtype=str).tolist()
     print("texts uploaded! with " + str(len(texts)))
+    print("proof:")
+    for ih in range(0,10):
+        print(texts[ih])
 
 if len(texts) == 0:
     print("Error texts empty")
