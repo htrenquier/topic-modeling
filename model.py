@@ -87,7 +87,7 @@ if args["load_texts"] != 'no':
     texts_file_path = args["load_texts"]
     print("Starting uploading from texts file...")
     with open(texts_file_path,"r") as texts_file:
-        for l in texts_file.readline():
+        for l in texts_file.readlines():
             texts.append(l.split(","))
     print("texts uploaded! with " + str(len(texts)))
     print("proof:")
