@@ -111,16 +111,17 @@ print("time: " + str(int(time.time() - time_start)))
 print("~")
 
 lda_models = []
-rg = range(10, 61, 10)
+rg = range(20, 69, 2)
+num_it = 10
 print("Generating models (k: # of topics):")  # k = number of topics
 for k in rg:
     print("k = "+str(k))
-    model_name = "../res_models/lda_model_k"+str(k)
+    model_name = "../res_models/lda_model_k"+str(k)+"_it"+str(num_it)
     if os.path.isfile(model_name):
         lda_models.append(models.LdaModel.load(model_name, mmap='r'))
         print(model_name + " loaded.")
     else:
-        lda_models.append(models.ldamodel.LdaModel(corpus, num_topics=k, id2word=dictionary, iterations=10))
+        lda_models.append(models.ldamodel.LdaModel(corpus, num_topics=k, id2word=dictionary, iterations=num_it))
         lda_models[-1].save(model_name)
         print(model_name + " generated.")
     print("time: " + str(int(time.time() - time_start)))
