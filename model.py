@@ -111,7 +111,7 @@ print("time: " + str(int(time.time() - time_start)))
 print("~")
 
 lda_models = []
-rg = range(20, 69, 2)
+rg = range(2, 69, 2)
 num_it = 10
 print("Generating models (k: # of topics):")  # k = number of topics
 for k in rg:
