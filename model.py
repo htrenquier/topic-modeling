@@ -162,6 +162,8 @@ for m in lda_models:
     print("time: " + str(int(time.time() - time_start)))
     print("~")
 
+res_coherence_file_gc.close()
+res_coherence_file_tt.close()
 
 
 #modelName = '../GoogleNews-vectors-negative300.bin'
