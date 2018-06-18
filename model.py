@@ -145,7 +145,7 @@ for m in lda_models:
     print(tt_c_v)
     print("time: " + str(int(time.time() - time_start)))
     print("~")
-    res_coherence_file_tt.write(tt_u_mass + "," + tt_c_v+"\r\n")
+    res_coherence_file_tt.write(str(tt_u_mass) + "," + str(tt_c_v)+"\r\n")
 
     print("Coherence with get_coherence()")
     print("U_MASS: (k = " + str(rg[lda_models.index(m)]) + ")")
@@ -158,7 +158,7 @@ for m in lda_models:
     cm = models.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='c_v')
     gc_c_v = cm.get_coherence()
     print(gc_c_v)
-    res_coherence_file_gc.write(gc_u_mass + "," + gc_c_v + "\r\n")
+    res_coherence_file_gc.write(str(gc_u_mass) + "," + str(gc_c_v) + "\r\n")
     print("time: " + str(int(time.time() - time_start)))
     print("~")
 
