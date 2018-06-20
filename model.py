@@ -6,7 +6,7 @@ import numpy as np
 import time
 import csv
 import argparse
-
+import itertools
 
 # arguments
 ap = argparse.ArgumentParser()
@@ -27,6 +27,15 @@ args = vars(ap.parse_args())
 #np.seterr(all='ignore')
 #np.warnings.filterwarnings('ignore')
 #print(np.geterr())
+
+
+def my_topic_coherence(top_words, vec_model):
+    sims = []
+    for v, w in itertools.combinations(top_words, 2):
+        sims.append(vec_model.similarity(v, w))
+        print(v + " / " + w + " => " + str(sims[-1]))
+        return sum(sims)/len(sims)
+
 
 
 # directory to scan
@@ -126,6 +135,31 @@ for k in rg:
         print(model_name + " generated.")
     print("time: " + str(int(time.time() - time_start)))
     print("~")
+
+print("loading w2vec")
+print("time: " + str(int(time.time() - time_start)))
+modelName = '../GoogleNews-vectors-negative300.bin'
+w2v_model = models.KeyedVectors.load_word2vec_format(modelName, binary=True)
+print("w2vec loaded")
+print("time: " + str(int(time.time() - time_start)))
+print("~")
+
+
+# for all models
+for model in lda_models:
+    topns = []
+    num_topics = len(model.get_topics())
+    topic_sim = []
+    # for each topic of the model get the top n words and compute my_topic_coherence()
+    for k in range(0, num_topics):
+        print("topn for model " + str(k) + " topics:, topic no " + str(k))
+        topns.append([])
+        # make top n list
+        for word, freq in model.show_topic(k, 5):
+            topns[-1].append(word)
+        topic_sim.append(my_topic_coherence(topns[-1], w2v_model))
+    avg_sim = sum(topic_sim)/len(topic_sim)
+    print("my_coherence: (k = " + str(rg[lda_models.index(model)])+") = " + str(avg_sim))
 
 res_coherence_file_tt = open("../res_coherence_tt.csv", "w")
 res_coherence_file_gc = open("../res_coherence_gc.csv", "w")
