@@ -8,6 +8,193 @@ import csv
 import argparse
 import itertools
 
+
+# numpy warning
+#np.seterr(all='ignore')
+#np.warnings.filterwarnings('ignore')
+#print(np.geterr())
+
+#
+def load_w2vec_model(modelName):
+    """
+    Loads word2vec model and prints time
+    :param modelName: Name (path) of the model
+    :return: word2vec model
+    """
+    print("loading w2vec")
+    print("time: " + str(int(time.time() - time_start)))
+    m = models.KeyedVectors.load_word2vec_format(modelName, binary=True)
+    print("w2vec loaded")
+    print("time: " + str(int(time.time() - time_start)))
+    print("~")
+    return m
+
+def my_topic_coherence(top_words, vec_model):
+    """
+    Computes a custom coherence measure from top words of a topic
+    :param top_words:
+    :param vec_model:
+    :return: custom coherence
+    """
+    sims = []
+    for v, w in itertools.combinations(top_words, 2):
+        sims.append(vec_model.similarity(v, w))
+        # print(v + " / " + w + " => " + str(sims[-1]))
+    return sum(sims)/len(sims)
+
+def get_mycoh(model):
+    """
+    Computes the custom coherence for a LDA model
+    :param model: LDA model
+    :return: Average custom coherence of all topics
+    """
+    topns = []
+    num_topics = len(model.get_topics())
+    topic_sim = []
+    ukn_words = 0
+    # for each topic of the model get the top n words and compute my_topic_coherence()
+    for k in range(0, num_topics):
+        # print("topn for model " + str(k) + " topics:, topic no " + str(k))
+        topns.append([])
+        # make top n list
+        for word, freq in model.show_topic(k, 10):
+            topns[-1].append(word)
+        # print(topns[-1])
+        try:
+            topic_sim.append(my_topic_coherence(topns[-1], w2v_model))
+        except KeyError as ke:
+            ukn_words += 1
+            # print("Unknown word in model k=" + str(rg[lda_models.index(model)]))
+    if len(topic_sim) != 0:
+        avg_sim = sum(topic_sim) / len(topic_sim)
+        print("my_coherence: (k = " + str(rg[lda_models.index(model)]) + ") = " + str(avg_sim))
+    else:
+        print(str(rg[lda_models.index(model)]) + " : model failed")
+    print(str(ukn_words) + " unknown words in model k = " + str(rg[lda_models.index(model)]))
+    return avg_sim
+
+
+def build_texts(args, scandir):
+    # text collection
+    texts = []
+    if args["gen_texts"] == 'yes':
+        # directory to scan
+        if args["scanpath"] != 'no':
+            scandir = args["scanpath"]
+
+        print("Scan path: " + str(scandir))
+        num_empty_files = 0
+
+        k = 0
+        print("upload & stemming")
+        time_start = time.time()
+        print(int(time.time() - time_start))
+        for root, directories, filenames in os.walk(scandir):
+            for filename in filenames:
+                file_path = os.path.join(root, filename)
+                k += 1
+                if k % 100 == 0:
+                    print(k)
+                # word list from csv
+                if os.stat(file_path).st_size <= 2:
+                    # empty file
+                    num_empty_files += 1
+                else:
+                    filtered_text = np.genfromtxt(file_path, delimiter=',', dtype=str).tolist()
+                    if args["stem"] == 'yes':
+                        filtered_text = [p_stemmer.stem(i) for i in filtered_text]
+                    texts.append(filtered_text)
+
+        print(str(num_empty_files) + " empty files")
+        if args["save_texts"] == 'yes':
+            print("Saving texts in file")
+            doc_name = "../res_texts/not_stemmed_texts.csv"
+            texts_file = open(doc_name, "w")
+            writer = csv.writer(texts_file)
+            for text in texts:
+                writer.writerow(text)
+                k -= 1
+                if k % 1000 == 0:
+                    print(k)
+
+            texts_file.close()
+            print("~~~ texts file saved !")
+
+        print("time: " + str(int(time.time() - time_start)))
+        print("~")
+    else:
+        if args["load_texts"] != 'no':
+            texts_file_path = args["load_texts"]
+            print("Starting uploading from texts file...")
+            with open(texts_file_path, "r") as texts_file:
+                for l in texts_file.readlines():
+                    texts.append(l.split(","))
+            print("texts uploaded with " + str(len(texts)) + " lines.")
+            texts_file.close()
+        else:
+            exit("No texts file given in --load_texts option")
+        if len(texts) == 0:
+            exit(code="texts empty")
+    return texts
+
+
+def gen_dict_and_corpus(texts):
+    print("Generating dictionary:")
+    d = corpora.Dictionary(texts)
+    print("time: " + str(int(time.time() - time_start)))
+    print("~")
+    print("Generating Corpus:")
+    c = [dictionary.doc2bow(text) for text in texts]
+    print("time: " + str(int(time.time() - time_start)))
+    print("~")
+    return d, c
+
+
+def build_lda_models(d, c, it, r):
+    """
+    Generate or load models according to the range, num_it, etc.
+    :param d: dictionary
+    :param c: corpus
+    :param it: number of iterations
+    :param r: range
+    :return: list of models
+    """
+    lms = []  #lda models
+    print("Generating models (k: # of topics):")  # k = number of topics
+    for k in r:
+        print("k = "+str(k))
+        mn = "../res_models/lda_model_k"+str(k)+"_it"+str(it)  # mn for model name
+        if os.path.isfile(mn):
+            lms.append(models.LdaModel.load(mn, mmap='r'))
+            print(mn + " loaded.")
+        else:
+            lms.append(models.ldamodel.LdaModel(c, num_topics=k, id2word=d, iterations=it))
+            lms[-1].save(mn)
+            print(mn + " generated.")
+        print("time: " + str(int(time.time() - time_start)))
+        print("~")
+    return lms
+
+
+def get_coherences(m):
+    """
+    Computes custom coherence and u_mass, c_v coherences from coherence model for a model
+    :param m: LDA model
+    :return: 3-tuple of coherences of m
+    """
+    print("~")
+    print("time: " + str(int(time.time() - time_start)))
+    print("k = " + str(rg[lda_models.index(m)]))
+    mc = get_mycoh(m)
+    cm = models.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='u_mass')
+    gc_u_mass = cm.get_coherence()
+    cm = models.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='c_v')
+    gc_c_v = cm.get_coherence()
+    return mc, gc_u_mass, gc_c_v
+
+### MAIN ###
+
+
 # arguments
 ap = argparse.ArgumentParser()
 ap.add_argument("-g", "--gen_texts", type=str, default="no",
@@ -20,199 +207,35 @@ ap.add_argument("-s", "--save_texts", type=str, default="no",
         help="Saves the generated texts to a file. Only if generating text list: -g")
 ap.add_argument("-l", "--load_texts", type=str, default="no",
         help="Loads texts from a file. arg is path of the texts file.")
-args = vars(ap.parse_args())
-
-
-# numpy warning
-#np.seterr(all='ignore')
-#np.warnings.filterwarnings('ignore')
-#print(np.geterr())
-
-
-def my_topic_coherence(top_words, vec_model):
-    sims = []
-    for v, w in itertools.combinations(top_words, 2):
-        sims.append(vec_model.similarity(v, w))
-        # print(v + " / " + w + " => " + str(sims[-1]))
-    return sum(sims)/len(sims)
-
+arguments = vars(ap.parse_args())
 
 # directory to scan
-ScanDir = '/Users/htrenqui/Documents/Travail/UvA/rp2/proj/res10k'
+scan_dir = '/Users/htrenqui/Documents/Travail/UvA/rp2/proj/res10k'
 # Create p_stemmer of class PorterStemmer
 p_stemmer = PorterStemmer()
-# text collection
-texts = []
 # time ref
 time_start = time.time()
-
-if args["gen_texts"] == 'yes':
-    # directory to scan
-    if args["scanpath"] != 'no':
-        ScanDir = args["scanpath"]
-
-    print("Scan path: " + str(ScanDir))
-    num_empty_files = 0
-
-    k = 0
-    print("upload & stemming")
-    time_start = time.time()
-    print(int(time.time() - time_start))
-    for root, directories, filenames in os.walk(ScanDir):
-        for filename in filenames:
-            file_path = os.path.join(root, filename)
-            k += 1
-            if k % 100 == 0:
-                print(k)
-            # word list from csv
-            if os.stat(file_path).st_size <= 2:
-                # empty file
-                num_empty_files += 1
-            else:
-                filtered_text = np.genfromtxt(file_path, delimiter=',', dtype=str).tolist()
-                if args["stem"] == 'yes':
-                    filtered_text = [p_stemmer.stem(i) for i in filtered_text]
-                texts.append(filtered_text)
-
-    print(str(num_empty_files) + " empty files")
-    if args["save_texts"] == 'yes':
-        print("Saving texts in file")
-        doc_name = "../res_texts/not_stemmed_texts.csv"
-        texts_file = open(doc_name, "w")
-        writer = csv.writer(texts_file)
-        for text in texts:
-            writer.writerow(text)
-            k -= 1
-            if k % 1000 == 0:
-                print(k)
-
-        texts_file.close()
-        print("~~~ texts file saved !")
-
-print("time: " + str(int(time.time() - time_start)))
-print("~")
-if args["load_texts"] != 'no':
-    texts_file_path = args["load_texts"]
-    print("Starting uploading from texts file...")
-    with open(texts_file_path,"r") as texts_file:
-        for l in texts_file.readlines():
-            texts.append(l.split(","))
-    print("texts uploaded with " + str(len(texts)) + " lines.")
-    texts_file.close()
-
-
-if len(texts) == 0:
-    exit(code="Error texts empty")
-
-print("len texts = " + str(len(texts)))
-print("time: " + str(int(time.time() - time_start)))
-print("~")
-
-
-print("Generating dictionary:")
-dictionary = corpora.Dictionary(texts)
-print("time: " + str(int(time.time() - time_start)))
-print("~")
-print("Generating Corpus:")
-corpus = [dictionary.doc2bow(text) for text in texts]
-print("time: " + str(int(time.time() - time_start)))
-print("~")
-
-lda_models = []
-rg = range(2, 69, 2)
-#rg = range(10, 21, 10)
+# ref word2vec model
+w2v_model_name = '../GoogleNews-vectors-negative300.bin'
+# range of models
+rg = range(2, 69, 2)  #rg = range(10, 21, 10)
+# number of iteration for model gen
 num_it = 10
-print("Generating models (k: # of topics):")  # k = number of topics
-for k in rg:
-    print("k = "+str(k))
-    model_name = "../res_models/lda_model_k"+str(k)+"_it"+str(num_it)
-    if os.path.isfile(model_name):
-        lda_models.append(models.LdaModel.load(model_name, mmap='r'))
-        print(model_name + " loaded.")
-    else:
-        lda_models.append(models.ldamodel.LdaModel(corpus, num_topics=k, id2word=dictionary, iterations=num_it))
-        lda_models[-1].save(model_name)
-        print(model_name + " generated.")
-    print("time: " + str(int(time.time() - time_start)))
-    print("~")
 
-print("loading w2vec")
-print("time: " + str(int(time.time() - time_start)))
-modelName = '../GoogleNews-vectors-negative300.bin'
-w2v_model = models.KeyedVectors.load_word2vec_format(modelName, binary=True)
-print("w2vec loaded")
-print("time: " + str(int(time.time() - time_start)))
-print("~")
+texts = build_texts(arguments, scan_dir)
+w2v_model = load_w2vec_model(w2v_model_name)
+dictionary, corpus = gen_dict_and_corpus(texts)
+lda_models = build_lda_models(dictionary, corpus, num_it, rg)
 
-
-# my coherence measure
-for model in lda_models:
-    topns = []
-    num_topics = len(model.get_topics())
-    topic_sim = []
-    ukn_words = 0
-    # for each topic of the model get the top n words and compute my_topic_coherence()
-    for k in range(0, num_topics):
-        # print("topn for model " + str(k) + " topics:, topic no " + str(k))
-        topns.append([])
-        # make top n list
-        for word, freq in model.show_topic(k, 10):
-            topns[-1].append(word)
-        print(topns[-1])
-        try:
-            topic_sim.append(my_topic_coherence(topns[-1], w2v_model))
-        except KeyError as ke:
-            ukn_words += 1
-            #print("Unknown word in model k=" + str(rg[lda_models.index(model)]))
-    if len(topic_sim) != 0:
-        avg_sim = sum(topic_sim)/len(topic_sim)
-        print("my_coherence: (k = " + str(rg[lda_models.index(model)])+") = " + str(avg_sim))
-    else:
-        print(str(rg[lda_models.index(model)]) + " : model failed")
-    print(str(ukn_words) + " unknown words in model k = " + str(rg[lda_models.index(model)]))
-
-res_coherence_file_tt = open("../res_coherence_tt.csv", "w")
-res_coherence_file_gc = open("../res_coherence_gc.csv", "w")
+res_coherence_file = open("../res_coherence.csv", "w")
 
 print("Coherence")
-for m in lda_models:
-    #print("Coherence with top_topics()")
-    #print("U_MASS: (k = " + str(rg[lda_models.index(m)])+")")
-    #tt_u_mass = m.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, window_size=None, coherence='u_mass',
-    #             topn=5, processes=4)
-    #print(tt_u_mass)
-    #print("time: " + str(int(time.time() - time_start)))
-    #print("~")
-    #print("C_V: (k = " + str(rg[lda_models.index(m)]) + ")")
-    #tt_c_v = m.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, window_size=None, coherence='c_v',
-    #             topn=5, processes=4)
-    #print(tt_c_v)
-    #print("time: " + str(int(time.time() - time_start)))
-    #print("~")
-    #res_coherence_file_tt.write(str(tt_u_mass) + "," + str(tt_c_v)+"\r\n")
-
-    print("Coherence with get_coherence()")
-    print("U_MASS: (k = " + str(rg[lda_models.index(m)]) + ")")
-    cm = models.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='u_mass')
-    gc_u_mass = cm.get_coherence()
-    print(gc_u_mass)
-    print("time: " + str(int(time.time() - time_start)))
-    print("~")
-    #print("C_V: (k = " + str(rg[lda_models.index(m)]) + ")")
-    #cm = models.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='c_v')
-    #gc_c_v = cm.get_coherence()
-    #print(gc_c_v)
-    #res_coherence_file_gc.write(str(gc_u_mass) + "," + str(gc_c_v) + "\r\n")
-    #print("time: " + str(int(time.time() - time_start)))
-    #print("~")
-
-res_coherence_file_gc.close()
-res_coherence_file_tt.close()
+for model in lda_models:
+    mc, um, cv = get_coherences(model)
+    res_coherence_file.write(str(rg[lda_models.index(model)]) +
+                             "," + str(mc) +
+                             "," + str(um) +
+                             "," + str(cv) + "\r\n")
 
 
-#modelName = '../GoogleNews-vectors-negative300.bin'
-#w2v_model = models.KeyedVectors.load_word2vec_format(modelName, binary=True)
-
-# https://www.geeksforgeeks.org/removing-stop-words-nltk-python/
-# https://rstudio-pubs-static.s3.amazonaws.com/79360_850b2a69980c4488b1db95987a24867a.html
-
+res_coherence_file.close()

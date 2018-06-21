@@ -36,38 +36,79 @@ texts = [['human', 'interface', 'computer'],
 
 dictionary = Dictionary(texts)
 corpus = [dictionary.doc2bow(text) for text in texts]
-model_name = "../glmod"
-regen_model = True  # False
-
-if os.path.isfile(model_name) and not regen_model:
-    goodLdaModel = LdaModel.load(model_name)
-else:
-    goodLdaModel = LdaModel(corpus=corpus, id2word=dictionary, iterations=500, num_topics=2)
-    goodLdaModel.save(model_name)
-
-print(len(goodLdaModel.get_topics()))
-
-print("Word distribution in topics: ")
-print("topic_0: " + str(goodLdaModel.print_topic(0, 12)))
-print("topic_1: " + str(goodLdaModel.print_topic(1, 12)))
-
-# top n words into list for 2 topics
-topn0 = []
-for word, freq in goodLdaModel.show_topic(0, 5):
-    topn0.append(word)
-topn1 = []
-for word, freq in goodLdaModel.show_topic(1, 5):
-    topn1.append(word)
 
 print("loading w2vec")
 modelName = '../GoogleNews-vectors-negative300.bin'
 w2v_model = KeyedVectors.load_word2vec_format(modelName, binary=True)
 print("w2vec loaded")
 
-print(topn0)
-print(my_topic_coherence(topn0, w2v_model))
-print(topn1)
-print(my_topic_coherence(topn1, w2v_model))
+
+def get_lda_models(regenmod,glmod,blmod):
+    list_models = []
+    if os.path.isfile(glmod) and not regenmod:
+        goodLdaModel = LdaModel.load(glmod)
+    else:
+        goodLdaModel = LdaModel(corpus=corpus, id2word=dictionary, iterations=50, num_topics=2)
+        goodLdaModel.save(glmod)
+    list_models.append(goodLdaModel)
+    if os.path.isfile(blmod) and not regenmod:
+        badLdaModel = LdaModel.load(blmod)
+    else:
+        badLdaModel = LdaModel(corpus=corpus, id2word=dictionary, iterations=1, num_topics=2)
+        badLdaModel.save(blmod)
+    list_models.append(badLdaModel)
+    return list_models
+
+
+def print_model_topics(m):
+    print(str(len(m.get_topics())) + " topics")
+    print("Word distribution in topics: ")
+    print("topic_0: " + str(m.print_topic(0, 12)))
+    print("topic_1: " + str(m.print_topic(1, 12)))
+
+
+def get_topn_pertopic(m,t,n):
+    topn = []
+    for word, freq in m.show_topic(t, n):
+        topn.append(word)
+    return topn
+
+
+
+
+
+def compute_exp():
+    good_model_name = "../glmod"
+    bad_model_name = "../blmod"
+    regen_models = True  # False
+    models = get_lda_models(regen_models, good_model_name, bad_model_name)
+    l = []
+    for m in models:
+        tt_u_mass = m.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, coherence='u_mass',
+                     topn=5, processes=4)
+        l.append((get_topn_pertopic(m, 0, 5), my_topic_coherence(get_topn_pertopic(m, 0, 5), w2v_model), tt_u_mass[0][1]))
+        l.append((get_topn_pertopic(m, 1, 5), my_topic_coherence(get_topn_pertopic(m, 1, 5), w2v_model), tt_u_mass[1][1]))
+    return l
+
+
+def compute_exp_k_times(k):
+    gmt0 = []  # good model topic 0
+    gmt1 = []
+    bmt0 = []
+    bmt1 = []  # bad model topic 1
+    for i in range(0, k):
+        a = compute_exp()
+        for b in a:
+            print(b)
+
+        gmt0.append(a[0])
+        gmt1.append(a[1])
+        bmt0.append(a[2])
+        bmt1.append(a[3])
+    #return gmt0, gmt1, bmt0, bmt1
+
+
+compute_exp_k_times(5)
 
 #print_docs_topics(texts, goodLdaModel, dictionary)
 
