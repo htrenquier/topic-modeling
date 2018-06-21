@@ -9,13 +9,7 @@ import argparse
 import itertools
 
 
-# numpy warning
-#np.seterr(all='ignore')
-#np.warnings.filterwarnings('ignore')
-#print(np.geterr())
-
-#
-def load_w2vec_model(modelName):
+def load_w2vec_model(mn):
     """
     Loads word2vec model and prints time
     :param modelName: Name (path) of the model
@@ -23,11 +17,12 @@ def load_w2vec_model(modelName):
     """
     print("loading w2vec")
     print("time: " + str(int(time.time() - time_start)))
-    m = models.KeyedVectors.load_word2vec_format(modelName, binary=True)
+    m = models.KeyedVectors.load_word2vec_format(mn, binary=True)
     print("w2vec loaded")
     print("time: " + str(int(time.time() - time_start)))
     print("~")
     return m
+
 
 def my_topic_coherence(top_words, vec_model):
     """
@@ -41,6 +36,7 @@ def my_topic_coherence(top_words, vec_model):
         sims.append(vec_model.similarity(v, w))
         # print(v + " / " + w + " => " + str(sims[-1]))
     return sum(sims)/len(sims)
+
 
 def get_mycoh(model):
     """
@@ -75,6 +71,12 @@ def get_mycoh(model):
 
 
 def build_texts(args, scandir):
+    """
+    Loads or generate texts
+    :param args: input arguments
+    :param scandir: directory to scan for source documents
+    :return: texts
+    """
     # text collection
     texts = []
     if args["gen_texts"] == 'yes':

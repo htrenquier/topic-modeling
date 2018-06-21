@@ -84,7 +84,7 @@ def compute_exp():
     models = get_lda_models(regen_models, good_model_name, bad_model_name)
     l = []
     for m in models:
-        tt_u_mass = m.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, coherence='u_mass',
+        tt_u_mass = m.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, coherence='c_v',
                      topn=5, processes=4)
         l.append((get_topn_pertopic(m, 0, 5), my_topic_coherence(get_topn_pertopic(m, 0, 5), w2v_model), tt_u_mass[0][1]))
         l.append((get_topn_pertopic(m, 1, 5), my_topic_coherence(get_topn_pertopic(m, 1, 5), w2v_model), tt_u_mass[1][1]))
@@ -92,23 +92,31 @@ def compute_exp():
 
 
 def compute_exp_k_times(k):
-    gmt0 = []  # good model topic 0
-    gmt1 = []
-    bmt0 = []
-    bmt1 = []  # bad model topic 1
+    gmc = []        #good model my coherence
+    gumass = []
+    bmc = []
+    bumass = []     #bad model umass coherence
     for i in range(0, k):
         a = compute_exp()
         for b in a:
             print(b)
 
-        gmt0.append(a[0])
-        gmt1.append(a[1])
-        bmt0.append(a[2])
-        bmt1.append(a[3])
-    #return gmt0, gmt1, bmt0, bmt1
+        gmc.append(a[0][1])
+        gmc.append(a[1][1])
+        gumass.append(a[0][2])
+        gumass.append(a[1][2])
+        bmc.append(a[2][1])
+        bmc.append(a[3][1])
+        bumass.append(a[2][2])
+        bumass.append(a[3][2])
+    #return gmc, gumass, bmc, bumass
+    return sum(gmc) / len(gmc), \
+           sum(gumass) / len(gumass), \
+           sum(bmc) / len(bmc), \
+           sum(bumass) / len(bumass)
 
 
-compute_exp_k_times(5)
+print(compute_exp_k_times(5))
 
 #print_docs_topics(texts, goodLdaModel, dictionary)
 
