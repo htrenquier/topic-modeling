@@ -20,8 +20,8 @@ def my_topic_coherence(top_words, vec_model):
     sims = []
     for v, w in itertools.combinations(top_words, 2):
         sims.append(vec_model.similarity(v, w))
-        print(v + " / " + w + " => " + str(sims[-1]))
-        return sum(sims)/len(sims)
+        #print(v + " / " + w + " => " + str(sims[-1]))
+    return sum(sims)/len(sims)
 
 
 texts = [['human', 'interface', 'computer'],

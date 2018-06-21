@@ -33,9 +33,8 @@ def my_topic_coherence(top_words, vec_model):
     sims = []
     for v, w in itertools.combinations(top_words, 2):
         sims.append(vec_model.similarity(v, w))
-        print(v + " / " + w + " => " + str(sims[-1]))
-        return sum(sims)/len(sims)
-
+        # print(v + " / " + w + " => " + str(sims[-1]))
+    return sum(sims)/len(sims)
 
 
 # directory to scan
@@ -121,6 +120,7 @@ print("~")
 
 lda_models = []
 rg = range(2, 69, 2)
+#rg = range(10, 21, 10)
 num_it = 10
 print("Generating models (k: # of topics):")  # k = number of topics
 for k in rg:
@@ -145,19 +145,23 @@ print("time: " + str(int(time.time() - time_start)))
 print("~")
 
 
-# for all models
+# my coherence measure
 for model in lda_models:
     topns = []
     num_topics = len(model.get_topics())
     topic_sim = []
     # for each topic of the model get the top n words and compute my_topic_coherence()
     for k in range(0, num_topics):
-        print("topn for model " + str(k) + " topics:, topic no " + str(k))
+        # print("topn for model " + str(k) + " topics:, topic no " + str(k))
         topns.append([])
         # make top n list
-        for word, freq in model.show_topic(k, 5):
+        for word, freq in model.show_topic(k, 10):
             topns[-1].append(word)
-        topic_sim.append(my_topic_coherence(topns[-1], w2v_model))
+        print(topns[-1])
+        try:
+            topic_sim.append(my_topic_coherence(topns[-1], w2v_model))
+        except KeyError as ke:
+            print("Unknown word in model k=" + str(rg[lda_models.index(model)]))
     avg_sim = sum(topic_sim)/len(topic_sim)
     print("my_coherence: (k = " + str(rg[lda_models.index(model)])+") = " + str(avg_sim))
 
@@ -166,20 +170,20 @@ res_coherence_file_gc = open("../res_coherence_gc.csv", "w")
 
 print("Coherence")
 for m in lda_models:
-    print("Coherence with top_topics()")
-    print("U_MASS: (k = " + str(rg[lda_models.index(m)])+")")
-    tt_u_mass = m.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, window_size=None, coherence='u_mass',
-                 topn=5, processes=4)
-    print(tt_u_mass)
-    print("time: " + str(int(time.time() - time_start)))
-    print("~")
-    print("C_V: (k = " + str(rg[lda_models.index(m)]) + ")")
-    tt_c_v = m.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, window_size=None, coherence='c_v',
-                 topn=5, processes=4)
-    print(tt_c_v)
-    print("time: " + str(int(time.time() - time_start)))
-    print("~")
-    res_coherence_file_tt.write(str(tt_u_mass) + "," + str(tt_c_v)+"\r\n")
+    #print("Coherence with top_topics()")
+    #print("U_MASS: (k = " + str(rg[lda_models.index(m)])+")")
+    #tt_u_mass = m.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, window_size=None, coherence='u_mass',
+    #             topn=5, processes=4)
+    #print(tt_u_mass)
+    #print("time: " + str(int(time.time() - time_start)))
+    #print("~")
+    #print("C_V: (k = " + str(rg[lda_models.index(m)]) + ")")
+    #tt_c_v = m.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, window_size=None, coherence='c_v',
+    #             topn=5, processes=4)
+    #print(tt_c_v)
+    #print("time: " + str(int(time.time() - time_start)))
+    #print("~")
+    #res_coherence_file_tt.write(str(tt_u_mass) + "," + str(tt_c_v)+"\r\n")
 
     print("Coherence with get_coherence()")
     print("U_MASS: (k = " + str(rg[lda_models.index(m)]) + ")")
@@ -188,13 +192,13 @@ for m in lda_models:
     print(gc_u_mass)
     print("time: " + str(int(time.time() - time_start)))
     print("~")
-    print("C_V: (k = " + str(rg[lda_models.index(m)]) + ")")
-    cm = models.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='c_v')
-    gc_c_v = cm.get_coherence()
-    print(gc_c_v)
-    res_coherence_file_gc.write(str(gc_u_mass) + "," + str(gc_c_v) + "\r\n")
-    print("time: " + str(int(time.time() - time_start)))
-    print("~")
+    #print("C_V: (k = " + str(rg[lda_models.index(m)]) + ")")
+    #cm = models.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='c_v')
+    #gc_c_v = cm.get_coherence()
+    #print(gc_c_v)
+    #res_coherence_file_gc.write(str(gc_u_mass) + "," + str(gc_c_v) + "\r\n")
+    #print("time: " + str(int(time.time() - time_start)))
+    #print("~")
 
 res_coherence_file_gc.close()
 res_coherence_file_tt.close()
