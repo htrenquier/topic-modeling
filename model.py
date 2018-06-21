@@ -150,6 +150,7 @@ for model in lda_models:
     topns = []
     num_topics = len(model.get_topics())
     topic_sim = []
+    ukn_words = 0
     # for each topic of the model get the top n words and compute my_topic_coherence()
     for k in range(0, num_topics):
         # print("topn for model " + str(k) + " topics:, topic no " + str(k))
@@ -161,9 +162,14 @@ for model in lda_models:
         try:
             topic_sim.append(my_topic_coherence(topns[-1], w2v_model))
         except KeyError as ke:
-            print("Unknown word in model k=" + str(rg[lda_models.index(model)]))
-    avg_sim = sum(topic_sim)/len(topic_sim)
-    print("my_coherence: (k = " + str(rg[lda_models.index(model)])+") = " + str(avg_sim))
+            ukn_words += 1
+            #print("Unknown word in model k=" + str(rg[lda_models.index(model)]))
+    if len(topic_sim) != 0:
+        avg_sim = sum(topic_sim)/len(topic_sim)
+        print("my_coherence: (k = " + str(rg[lda_models.index(model)])+") = " + str(avg_sim))
+    else:
+        print(str(rg[lda_models.index(model)]) + " : model failed")
+    print(str(ukn_words) + " unknown words in model k = " + str(rg[lda_models.index(model)]))
 
 res_coherence_file_tt = open("../res_coherence_tt.csv", "w")
 res_coherence_file_gc = open("../res_coherence_gc.csv", "w")
