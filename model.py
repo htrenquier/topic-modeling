@@ -144,7 +144,7 @@ def gen_dict_and_corpus(texts):
     print("time: " + str(int(time.time() - time_start)))
     print("~")
     print("Generating Corpus:")
-    c = [dictionary.doc2bow(text) for text in texts]
+    c = [d.doc2bow(text) for text in texts]
     print("time: " + str(int(time.time() - time_start)))
     print("~")
     return d, c
