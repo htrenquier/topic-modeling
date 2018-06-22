@@ -229,15 +229,12 @@ w2v_model = load_w2vec_model(w2v_model_name)
 dictionary, corpus = gen_dict_and_corpus(texts)
 lda_models = build_lda_models(dictionary, corpus, num_it, rg)
 
-res_coherence_file = open("../res_coherence.csv", "w")
-
 print("Coherence")
 for model in lda_models:
     mc, um, cv = get_coherences(model)
-    res_coherence_file.write(str(rg[lda_models.index(model)]) +
-                             "," + str(mc) +
-                             "," + str(um) +
-                             "," + str(cv) + "\r\n")
-
-
-res_coherence_file.close()
+    with open("../res_coherence.csv", "w") as res_coherence_file:
+        res_coherence_file.write(str(rg[lda_models.index(model)]) +
+                                 "," + str(mc) +
+                                 "," + str(um) +
+                                 "," + str(cv) + "\r\n")
+    res_coherence_file.close()
