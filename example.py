@@ -13,14 +13,46 @@ def print_docs_topics(dtexts, dlda_model, ddictionary):
         print("")
         print("Coherence = " + str(cm.get_coherence()))
         print("Bag of word = " + str(text))
-        print("Share of topics = " + str(goodLdaModel.get_document_topics(bow)))
+        print("Share of topics = " + str(dlda_model.get_document_topics(bow)))
 
 
-def my_topic_coherence(top_words, vec_model):
+def my_topic_coherence(top_words_list, vec_model):
+    """
+
+    :param top_words_list: list of top_words, top_words is a list of words representing 1 topic
+    :param vec_model:
+    :return:
+    """
+    inter_ts = []
+    intra_ts = []
+    for top_words in top_words_list:
+        #intra
+        intra_ts.append(intra_topic_coh(top_words, vec_model))
+        #inter
+        inter_ts.append(inter_topics_coh(top_words_list, top_words, vec_model))
+    return sum(intra_ts)*len(inter_ts)/(len(intra_ts)*sum(inter_ts))
+
+
+def intra_topic_coh(tw, vec_model):
+    """
+    computes intra topic coherence given a list of top words (tw)
+    :param tw: top_words
+    :return:
+    """
     sims = []
-    for v, w in itertools.combinations(top_words, 2):
+    for v, w in itertools.combinations(tw, 2):
         sims.append(vec_model.similarity(v, w))
-        #print(v + " / " + w + " => " + str(sims[-1]))
+        # print(v + " / " + w + " => " + str(sims[-1]))
+    return sum(sims)/len(sims)
+
+
+def inter_topics_coh(twl, tw, vec_model):
+    sims = []
+    for other_top_words in twl:
+        if other_top_words != tw:
+            for w in tw:
+                for v in other_top_words:
+                    sims.append(vec_model.similarity(w, v))
     return sum(sims)/len(sims)
 
 

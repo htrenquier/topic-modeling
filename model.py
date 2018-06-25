@@ -24,7 +24,7 @@ def load_w2vec_model(mn):
     return m
 
 
-def my_topic_coherence(top_words, vec_model):
+def intra_topic_coherence(top_words, vec_model):
     """
     Computes a custom coherence measure from top words of a topic
     :param top_words:
@@ -38,14 +38,14 @@ def my_topic_coherence(top_words, vec_model):
     return sum(sims)/len(sims)
 
 
-def get_mycoh(model):
+def get_mycoh(m):
     """
     Computes the custom coherence for a LDA model
-    :param model: LDA model
+    :param m: LDA model
     :return: Average custom coherence of all topics
     """
     topns = []
-    num_topics = len(model.get_topics())
+    num_topics = len(m.get_topics())
     topic_sim = []
     ukn_words = 0
     # for each topic of the model get the top n words and compute my_topic_coherence()
@@ -53,20 +53,20 @@ def get_mycoh(model):
         # print("topn for model " + str(k) + " topics:, topic no " + str(k))
         topns.append([])
         # make top n list
-        for word, freq in model.show_topic(k, 10):
+        for word, freq in m.show_topic(k, 10):
             topns[-1].append(word)
         # print(topns[-1])
         try:
-            topic_sim.append(my_topic_coherence(topns[-1], w2v_model))
+            topic_sim.append(intra_topic_coherence(topns[-1], w2v_model))
         except KeyError as ke:
             ukn_words += 1
             # print("Unknown word in model k=" + str(rg[lda_models.index(model)]))
     if len(topic_sim) != 0:
         avg_sim = sum(topic_sim) / len(topic_sim)
-        print("my_coherence: (k = " + str(rg[lda_models.index(model)]) + ") = " + str(avg_sim))
+        print("my_coherence: (k = " + str(rg[lda_models.index(m)]) + ") = " + str(avg_sim))
     else:
-        print(str(rg[lda_models.index(model)]) + " : model failed")
-    print(str(ukn_words) + " unknown words in model k = " + str(rg[lda_models.index(model)]))
+        print(str(rg[lda_models.index(m)]) + " : model failed")
+    print(str(ukn_words) + " unknown words in model k = " + str(rg[lda_models.index(m)]))
     return avg_sim
 
 
