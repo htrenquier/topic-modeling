@@ -51,11 +51,7 @@ def get_mycoh(m):
     # for each topic of the model get the top n words and compute my_topic_coherence()
     for k in range(0, num_topics):
         # print("topn for model " + str(k) + " topics:, topic no " + str(k))
-        topns.append([])
-        # make top n list
-        for word, freq in m.show_topic(k, 10):
-            topns[-1].append(word)
-        # print(topns[-1])
+        topns.append(get_topn_pertopic(m, k, 10))
         try:
             topic_sim.append(intra_topic_coherence(topns[-1], w2v_model))
         except KeyError as ke:
@@ -68,6 +64,83 @@ def get_mycoh(m):
         print(str(rg[lda_models.index(m)]) + " : model failed")
     print(str(ukn_words) + " unknown words in model k = " + str(rg[lda_models.index(m)]))
     return avg_sim
+
+
+def my_model_coherence(top_words_list, vec_model):
+    """
+
+    :param top_words_list: list of top_words, top_words is a list of words representing 1 topic
+    :param vec_model:
+    :return:
+    """
+    inter_ts = []
+    intra_ts = []
+    for top_words in top_words_list:
+        # inter
+        inter_ts.append(inter_topics_sim(top_words_list, top_words, vec_model))
+        # intra
+        intra_ts.append(intra_topic_sim(top_words, vec_model))
+
+    return sum(intra_ts)*len(inter_ts)/(len(intra_ts)*sum(inter_ts))
+
+
+def intra_topic_sim(tw, vec_model):
+    """
+    computes intra topic coherence given a list of top words (tw)
+    :param tw: top_words
+    :return:
+    """
+    sims = []
+    for v, w in itertools.combinations(tw, 2):
+        try:
+            sims.append(vec_model.similarity(v, w)+1)
+        except KeyError as ke:
+            #ukn_words += 1
+            pass
+        # print(v + " / " + w + " => " + str(sims[-1]))
+    if len(sims) == 0:
+        print("Bad topic: Unknown words")
+        return 0
+    else:
+        return sum(sims)/len(sims)
+
+
+def inter_topics_sim(twl, tw, vec_model):
+    """
+    Computes similarity between one topic and all the others
+    :param twl: top_words list: top_words of other topics
+    :param tw: top_words of the topic to compare
+    :param vec_model:
+    :return:
+    """
+    sims = []
+    for top_words_other in twl:
+        if top_words_other != tw:
+            for w in tw:
+                for v in top_words_other:
+                    try:
+                        sims.append(vec_model.similarity(w, v)+1)
+                    except KeyError:
+                        pass
+    if len(sims) == 0:
+        print("Bad topic: Unknown words")
+        return 0
+    else:
+        return sum(sims) / len(sims)
+
+
+def get_topn_pertopic(m,t,n):
+    """
+
+    :param m: model
+    :param t: topic number
+    :param n: number of words in the top words
+    :return:
+    """
+    topn = []
+    for word, freq in m.show_topic(t, n):
+        topn.append(word)
+    return topn
 
 
 def build_texts(args, scandir):

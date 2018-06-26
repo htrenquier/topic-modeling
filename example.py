@@ -26,14 +26,15 @@ def my_topic_coherence(top_words_list, vec_model):
     inter_ts = []
     intra_ts = []
     for top_words in top_words_list:
+        # inter
+        inter_ts.append(inter_topics_sim(top_words_list, top_words, vec_model))
         #intra
-        intra_ts.append(intra_topic_coh(top_words, vec_model))
-        #inter
-        inter_ts.append(inter_topics_coh(top_words_list, top_words, vec_model))
+        intra_ts.append(intra_topic_sim(top_words, vec_model))
+
     return sum(intra_ts)*len(inter_ts)/(len(intra_ts)*sum(inter_ts))
 
 
-def intra_topic_coh(tw, vec_model):
+def intra_topic_sim(tw, vec_model):
     """
     computes intra topic coherence given a list of top words (tw)
     :param tw: top_words
@@ -46,12 +47,19 @@ def intra_topic_coh(tw, vec_model):
     return sum(sims)/len(sims)
 
 
-def inter_topics_coh(twl, tw, vec_model):
+def inter_topics_sim(twl, tw, vec_model):
+    """
+    Computes similarity between one topic and all the others
+    :param twl: top_words list: top_words of other topics
+    :param tw: top_words of the topic to compare
+    :param vec_model:
+    :return:
+    """
     sims = []
-    for other_top_words in twl:
-        if other_top_words != tw:
+    for top_words_other in twl:
+        if top_words_other != tw:
             for w in tw:
-                for v in other_top_words:
+                for v in top_words_other:
                     sims.append(vec_model.similarity(w, v))
     return sum(sims)/len(sims)
 
@@ -75,20 +83,13 @@ w2v_model = KeyedVectors.load_word2vec_format(modelName, binary=True)
 print("w2vec loaded")
 
 
-def get_lda_models(regenmod,glmod,blmod):
+def get_lda_model(regenmod, lmod):
     list_models = []
-    if os.path.isfile(glmod) and not regenmod:
-        goodLdaModel = LdaModel.load(glmod)
+    if os.path.isfile(lmod) and not regenmod:
+        model = LdaModel.load(lmod)
     else:
-        goodLdaModel = LdaModel(corpus=corpus, id2word=dictionary, iterations=50, num_topics=2)
-        goodLdaModel.save(glmod)
-    list_models.append(goodLdaModel)
-    if os.path.isfile(blmod) and not regenmod:
-        badLdaModel = LdaModel.load(blmod)
-    else:
-        badLdaModel = LdaModel(corpus=corpus, id2word=dictionary, iterations=1, num_topics=2)
-        badLdaModel.save(blmod)
-    list_models.append(badLdaModel)
+        model = LdaModel(corpus=corpus, id2word=dictionary, iterations=50, num_topics=2)
+    list_models.append(model)
     return list_models
 
 
@@ -106,49 +107,32 @@ def get_topn_pertopic(m,t,n):
     return topn
 
 
-
-
-
 def compute_exp():
-    good_model_name = "../glmod"
-    bad_model_name = "../blmod"
-    regen_models = True  # False
-    models = get_lda_models(regen_models, good_model_name, bad_model_name)
+    model_name = "../lmod"
+    regen_models = True
+    models = get_lda_model(regen_models, model_name)
     l = []
+    nb_topics = 2
     for m in models:
-        tt_u_mass = m.top_topics(corpus=corpus, texts=texts, dictionary=dictionary, coherence='c_v',
-                     topn=5, processes=4)
-        l.append((get_topn_pertopic(m, 0, 5), my_topic_coherence(get_topn_pertopic(m, 0, 5), w2v_model), tt_u_mass[0][1]))
-        l.append((get_topn_pertopic(m, 1, 5), my_topic_coherence(get_topn_pertopic(m, 1, 5), w2v_model), tt_u_mass[1][1]))
+        cm_umass = coherencemodel.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='u_mass')
+        cm_cv = coherencemodel.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='c_v')
+        top_words_list = []
+        for k in range(0, nb_topics):
+            topn = get_topn_pertopic(m, k, 5)
+            top_words_list.append(topn)
+
+        l.append((top_words_list, my_topic_coherence(top_words_list, w2v_model), cm_umass.get_coherence(), cm_cv.get_coherence()))
     return l
 
 
 def compute_exp_k_times(k):
-    gmc = []        #good model my coherence
-    gumass = []
-    bmc = []
-    bumass = []     #bad model umass coherence
     for i in range(0, k):
         a = compute_exp()
         for b in a:
             print(b)
+    return a
 
-        gmc.append(a[0][1])
-        gmc.append(a[1][1])
-        gumass.append(a[0][2])
-        gumass.append(a[1][2])
-        bmc.append(a[2][1])
-        bmc.append(a[3][1])
-        bumass.append(a[2][2])
-        bumass.append(a[3][2])
-    #return gmc, gumass, bmc, bumass
-    return sum(gmc) / len(gmc), \
-           sum(gumass) / len(gumass), \
-           sum(bmc) / len(bmc), \
-           sum(bumass) / len(bumass)
-
-
-print(compute_exp_k_times(5))
+compute_exp_k_times(10)
 
 #print_docs_topics(texts, goodLdaModel, dictionary)
 
