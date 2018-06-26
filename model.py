@@ -105,7 +105,7 @@ def intra_topic_sim(tw, vec_model):
         return sum(sims)/len(sims)
 
 
-def inter_topics_sim(twl, tw, vec_model):
+def inter_topics_sim(twl, vec_model):
     """
     Computes similarity between one topic and all the others
     :param twl: top_words list: top_words of other topics
@@ -114,14 +114,11 @@ def inter_topics_sim(twl, tw, vec_model):
     :return:
     """
     sims = []
-    for top_words_other in twl:
-        if top_words_other != tw:
-            for w in tw:
-                for v in top_words_other:
-                    try:
-                        sims.append(vec_model.similarity(w, v)+1)
-                    except KeyError:
-                        pass
+    for lv, lw in itertools.combinations(twl, 2):
+        try:
+            sims.append(vec_model.n_similarity(lv, lw) + 1)
+        except KeyError:
+            pass
     if len(sims) == 0:
         print("Bad topic: Unknown words")
         return 0
@@ -129,7 +126,7 @@ def inter_topics_sim(twl, tw, vec_model):
         return sum(sims) / len(sims)
 
 
-def get_topn_pertopic(m,t,n):
+def get_topn_pertopic(m, t, n):
     """
 
     :param m: model

@@ -26,11 +26,10 @@ def my_topic_coherence(top_words_list, vec_model):
     inter_ts = []
     intra_ts = []
     for top_words in top_words_list:
-        # inter
-        inter_ts.append(inter_topics_sim(top_words_list, top_words, vec_model))
         #intra
         intra_ts.append(intra_topic_sim(top_words, vec_model))
-
+    # inter
+    inter_ts.append(inter_topics_sim(top_words_list, vec_model))
     return sum(intra_ts)*len(inter_ts)/(len(intra_ts)*sum(inter_ts))
 
 
@@ -42,12 +41,12 @@ def intra_topic_sim(tw, vec_model):
     """
     sims = []
     for v, w in itertools.combinations(tw, 2):
-        sims.append(vec_model.similarity(v, w))
+        sims.append(vec_model.similarity(v, w)+1)
         # print(v + " / " + w + " => " + str(sims[-1]))
     return sum(sims)/len(sims)
 
 
-def inter_topics_sim(twl, tw, vec_model):
+def inter_topics_sim(twl, vec_model):
     """
     Computes similarity between one topic and all the others
     :param twl: top_words list: top_words of other topics
@@ -56,11 +55,9 @@ def inter_topics_sim(twl, tw, vec_model):
     :return:
     """
     sims = []
-    for top_words_other in twl:
-        if top_words_other != tw:
-            for w in tw:
-                for v in top_words_other:
-                    sims.append(vec_model.similarity(w, v))
+    for v, w in itertools.combinations(twl, 2):
+        print(v, w)
+        sims.append(vec_model.n_similarity(v, w)+1)
     return sum(sims)/len(sims)
 
 
