@@ -77,7 +77,7 @@ def my_model_coherence(top_words_list, vec_model):
     intra_ts = []
     for top_words in top_words_list:
         # inter
-        inter_ts.append(inter_topics_sim(top_words_list, top_words, vec_model))
+        inter_ts.append(inter_topics_sim(top_words_list, vec_model))
         # intra
         intra_ts.append(intra_topic_sim(top_words, vec_model))
 
