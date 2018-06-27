@@ -248,7 +248,7 @@ def build_lda_models(d, c, it, r):
     return lms
 
 
-def get_coherences(m):
+def get_coherences(m,w2v):
     """
     Computes custom coherence and u_mass, c_v coherences from coherence model for a model
     :param m: LDA model
@@ -257,7 +257,17 @@ def get_coherences(m):
     print("~")
     print("time: " + str(int(time.time() - time_start)))
     print("k = " + str(rg[lda_models.index(m)]))
-    mc = get_mycoh(m)
+    #mc = get_mycoh(m) OUTDATED
+    topns = []
+    num_topics = len(m.get_topics())
+    topic_sim = []
+    ukn_words = 0
+    # for each topic of the model get the top n words and compute my_topic_coherence()
+    for k in range(0, num_topics):
+        # print("topn for model " + str(k) + " topics:, topic no " + str(k))
+        topns.append(get_topn_pertopic(m, k, 10))
+
+    mc = my_model_coherence(topns, w2v)
     # cm = models.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='u_mass')
     # gc_u_mass = cm.get_coherence()
     # cm = models.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='c_v')
@@ -304,7 +314,7 @@ lda_models = build_lda_models(dictionary, corpus, num_it, rg)
 
 print("Coherence")
 for model in lda_models:
-    mc, um, cv = get_coherences(model)
+    mc, um, cv = get_coherences(model, w2v_model)
     with open("../res_coherence_"+str(num_it)+"it.csv", "a") as res_coherence_file:
         res_coherence_file.write(str(rg[lda_models.index(model)]) +
                                  "," + str(mc) +
