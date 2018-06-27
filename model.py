@@ -258,10 +258,12 @@ def get_coherences(m):
     print("time: " + str(int(time.time() - time_start)))
     print("k = " + str(rg[lda_models.index(m)]))
     mc = get_mycoh(m)
-    cm = models.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='u_mass')
-    gc_u_mass = cm.get_coherence()
-    cm = models.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='c_v')
-    gc_c_v = cm.get_coherence()
+    # cm = models.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='u_mass')
+    # gc_u_mass = cm.get_coherence()
+    # cm = models.CoherenceModel(model=m, corpus=corpus, texts=texts, coherence='c_v')
+    # gc_c_v = cm.get_coherence()
+    gc_u_mass = 0
+    gc_c_v = 0
     return mc, gc_u_mass, gc_c_v
 
 ### MAIN ###
@@ -290,19 +292,20 @@ time_start = time.time()
 # ref word2vec model
 w2v_model_name = '../GoogleNews-vectors-negative300.bin'
 # range of models
-rg = range(2, 69, 2)  #rg = range(10, 21, 10)
+rg = range(2, 67, 2)  #rg = range(10, 21, 10)
 # number of iteration for model gen
 num_it = 10
 
 texts = build_texts(arguments, scan_dir)
 w2v_model = load_w2vec_model(w2v_model_name)
 dictionary, corpus = gen_dict_and_corpus(texts)
+
 lda_models = build_lda_models(dictionary, corpus, num_it, rg)
 
 print("Coherence")
 for model in lda_models:
     mc, um, cv = get_coherences(model)
-    with open("../res_coherence.csv", "w") as res_coherence_file:
+    with open("../res_coherence_"+str(num_it)+"it.csv", "a") as res_coherence_file:
         res_coherence_file.write(str(rg[lda_models.index(model)]) +
                                  "," + str(mc) +
                                  "," + str(um) +

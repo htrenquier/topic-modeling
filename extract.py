@@ -6,10 +6,11 @@ from nltk.corpus import stopwords
 
 stop_words = set(stopwords.words('english'))
 pronouns = {'i','you','he','she','they','them','we','us','that','which','who','whom','whose','whichever','whoever','whomever'}
-verbs = {'would','am','are','will','can','could','may','might'}
+verbs = {'would','am','are','will','can','could','may','might','go','going','said','say','let','get','i\'m','i\'ll'}
 months = {'january','february','march','april','may','june','july','august','september','october','november','december',
           'jan','feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sept', 'oct', 'nov','dec'}
-others = {'please','no','for','the','am','pm','and','from','th'}
+days = {'mon','tue','wed','thu','fri','sat'}
+others = {'please','no','for','the','am','pm','and','from','th','zmzm','thru','new','one','de','also','san','thanks','thank','good'}
 names = {'stacey'}
 all_stop_words = stop_words.union(pronouns).union(others).union(months).union(verbs).union(names)
 
