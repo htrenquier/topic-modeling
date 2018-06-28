@@ -84,7 +84,7 @@ k = 0
 dir_no = 0
 dest_dir_path = ScanDir + "batch" + str(dir_no)
 directory = os.path.dirname(dest_dir_path)
-os.mkdir(directory)
+os.makedirs(directory)
 
 for root, directories, filenames in os.walk(ScanDir):
     for filename in filenames:
@@ -97,7 +97,7 @@ for root, directories, filenames in os.walk(ScanDir):
             dir_no += 1
             dest_dir_path = ScanDir + "batch" + str(dir_no)
             directory = os.path.dirname(dest_dir_path)
-            os.mkdir(directory)
+            os.makedirs(directory)
 
         # get email file
         file_path = os.path.join(root, filename)
