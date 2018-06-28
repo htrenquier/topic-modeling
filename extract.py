@@ -82,7 +82,7 @@ re_rep_space = "  +"
 ScanDir = '../mailtest/'
 k = 0
 dir_no = 0
-dest_dir_path = ScanDir + "batch" + str(dir_no)
+dest_dir_path = "../res/batch" + str(dir_no)
 directory = os.path.dirname(dest_dir_path)
 os.makedirs(directory)
 
