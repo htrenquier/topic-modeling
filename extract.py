@@ -84,7 +84,7 @@ k = 0
 dir_no = 0
 dest_dir_path = "../res/batch" + str(dir_no)
 directory = os.path.dirname(dest_dir_path)
-os.makedirs(directory)
+os.mkdir(directory)
 
 for root, directories, filenames in os.walk(ScanDir):
     for filename in filenames:
@@ -95,15 +95,15 @@ for root, directories, filenames in os.walk(ScanDir):
         if k % 5000 == 0:
             print(k)
             dir_no += 1
-            dest_dir_path = ScanDir + "batch" + str(dir_no)
+            dest_dir_path = "../res/batch" + str(dir_no) + "/"
             directory = os.path.dirname(dest_dir_path)
-            os.makedirs(directory)
+            os.mkdir(directory)
 
         # get email file
         file_path = os.path.join(root, filename)
         file = open(file_path,"r")
         # res file
-        doc_name = "../res/"+str(k)+".csv"
+        doc_name = "../res/batch" + str(dir_no) + "/" + str(k) + ".csv"
         content = open(doc_name, "w")
         # remove email headers
         payload = extract_headers(''.join(file.readlines()))
