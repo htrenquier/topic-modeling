@@ -1,5 +1,5 @@
 import os
-from nltk.stem.porter import PorterStemmer
+import myPorterStemmer
 from gensim import corpora
 from gensim import models
 import numpy as np
@@ -121,6 +121,7 @@ def inter_topics_sim(twl, vec_model):
             pass
     if len(sims) == 0:
         print("Bad topic: Unknown words")
+        print(twl)
         return 0
     else:
         return sum(sims) / len(sims)
@@ -180,7 +181,7 @@ def build_texts(args, scandir):
         print(str(num_empty_files) + " empty files")
         if args["save_texts"] == 'yes':
             print("Saving texts in file")
-            doc_name = "../res_texts/not_stemmed_texts.csv"
+            doc_name = "../res_texts/stemmed_texts.csv"
             texts_file = open(doc_name, "w")
             writer = csv.writer(texts_file)
             for text in texts:
@@ -296,7 +297,7 @@ arguments = vars(ap.parse_args())
 # directory to scan
 scan_dir = '/Users/htrenqui/Documents/Travail/UvA/rp2/proj/res10k'
 # Create p_stemmer of class PorterStemmer
-p_stemmer = PorterStemmer()
+p_stemmer = myPorterStemmer.PorterStemmer()
 # time ref
 time_start = time.time()
 # ref word2vec model

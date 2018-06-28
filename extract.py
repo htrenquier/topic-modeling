@@ -10,8 +10,9 @@ verbs = {'would','am','are','will','can','could','may','might','go','going','sai
 months = {'january','february','march','april','may','june','july','august','september','october','november','december',
           'jan','feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sept', 'oct', 'nov','dec'}
 days = {'mon','tue','wed','thu','fri','sat'}
-others = {'please','no','for','the','am','pm','and','from','th','zmzm','thru','new','one','de','also','san','thanks','thank','good'}
-names = {'stacey'}
+others = {'please','no','for','the','am','pm','and','from','th','zmzm','thru','new','one','de','also','san','thanks',
+          'thank','good', 'er', 'ed', 'ng', 'enron', 'nd', 'es', 'al', 'ing'}
+names = {'stacey','phillip','enron'}
 all_stop_words = stop_words.union(pronouns).union(others).union(months).union(verbs).union(names)
 
 def extract_headers(a):
@@ -95,7 +96,7 @@ for root, directories, filenames in os.walk(ScanDir):
         payload = payload.split("Subject:")[-1]
         # regex filter
         payload_tab = keep_words(payload)
-        # lower and stop words filter
+        # lowercase and stop words filter
         payload_tab_lower = [w.lower() for w in payload_tab if not w.lower() in all_stop_words]
         writer = csv.writer(content)
         writer.writerow(payload_tab_lower)
