@@ -11,9 +11,10 @@ months = {'january','february','march','april','may','june','july','august','sep
           'jan','feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sept', 'oct', 'nov','dec'}
 days = {'mon','tue','wed','thu','fri','sat'}
 others = {'please','no','for','the','am','pm','and','from','th','zmzm','thru','new','one','de','also','san','thanks',
-          'thank','good', 'er', 'ed', 'ng', 'enron', 'nd', 'es', 'al', 'ing'}
+          'thank','good', 'er', 'ed', 'ng', 'enron', 'nd', 'es', 'al', 'ing','per'}
 names = {'stacey','phillip','enron'}
 all_stop_words = stop_words.union(pronouns).union(others).union(months).union(verbs).union(names)
+
 
 def extract_headers(a):
     b = email.message_from_string(a)
