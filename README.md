@@ -1,13 +1,22 @@
 # Improving Semantic Quality of Topic Models
 
+In this research, we study the quality of a topic modeling technique called
+Latent Dirichlet Allocation. We wonder if it could be reliably used in forensic
+investigations to cope with large evidence datasets. We make several
+measurements to understand the impact of two important parameters on
+the quality of LDA models. For that, we consider two existing evaluation
+metrics to estimate the quality of a model and design our own. The dataset
+used in the experiments is the Enron e-mail database which is often used in
+Natural Language Processing.
+
 ### How to improve semantic quality of LDA models ?
-* What is the optimal number of topics for a LDA model
+* What is the optimal number of topics for a LDA model?
 * How does the number of iterations influence the quality of models?
 * Can we improve the semantic quality evaluation?
 
 This repository contains the source code used during a research project. The paper written for this project is available in this repository as well.
 
-[Google Code Archive - Long-term storage for Google Code Project Hosting.](https://code.google.com/archive/p/word2vec/)  
+[Word2vec Code Archive - Google Code Project Hosting.](https://code.google.com/archive/p/word2vec/)  
 [Enron Email Dataset](https://www.cs.cmu.edu/~enron/)  
 
 ___
