@@ -78,10 +78,10 @@ re_special_chars = ",|\.|;|:|--|-\s|\s-|>|<|\)|\(|$|\?|\'|`|&|@|=|!|\[|\]|\*|\+|
 re_rep_space = "  +"
 
 # directory to scan
-#ScanDir = '/Users/htrenqui/Desktop/mailtest/'
-ScanDir = '../mailtest/'
+ScanDir = '/Users/htrenqui/Desktop/mailtest/'
 k = 0
 dir_no = 0
+# directory ../res should be present already
 dest_dir_path = "../res/batch" + str(dir_no)
 directory = os.path.dirname(dest_dir_path)
 os.mkdir(directory)
@@ -95,7 +95,7 @@ for root, directories, filenames in os.walk(ScanDir):
         if k % 5000 == 0:
             print(k)
             dir_no += 1
-            dest_dir_path = "../res/batch" + str(dir_no) + "/"
+            dest_dir_path = "../res/batch" + str(dir_no)
             directory = os.path.dirname(dest_dir_path)
             os.mkdir(directory)
 

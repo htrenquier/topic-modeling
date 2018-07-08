@@ -3,7 +3,9 @@ import time
 import itertools
 
 #tw = ['th', 'de', 'er', 'ed', 'ng', 'enron', 'nd', 'es', 'al', 'ing']
-tw = ['spy','spi','happi','happy']
+#tw = ['spy','spi','happi','happy']
+tw = ['bacteria', 'poker']
+
 
 def load_w2vec_model(mn):
     """
